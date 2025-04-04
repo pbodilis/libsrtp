@@ -1,3 +1,21 @@
+# Integration in WebAssembly: WebCrypto
+
+**Description:**
+This is an attempt to use WebCrypto as cypher engine instead of built-in libsrtp (or Openssl, wolfssl, ...)
+
+Main problem is that WebCrypto is asynchronous, so requires the use of `await` and ASINCIFY, which produces significant overhead + context switching.
+For 10000 protect/unprotect with a 256 bits key:
+built_in: ~1600ms
+webcrypto: ~1600ms (so yeah, pretty much on par with built_in)
+openssl: ~400ms (4 times faster, pretty much a no brainer)
+
+Most of the interesting code is in `aes_icm_webcrypto.cc`
+
+emscripten version: 4.0.5 (53b38d0c6f9fce1b62c55a8012bc6477f7a42711)
+
+
+--------------------------------------------------------------------------------
+
 [![CMake Build](https://github.com/cisco/libsrtp/actions/workflows/cmake.yml/badge.svg)](https://github.com/cisco/libsrtp/actions/workflows/cmake.yml)
 [![Autotools Build](https://github.com/cisco/libsrtp/actions/workflows/autotools.yml/badge.svg)](https://github.com/cisco/libsrtp/actions/workflows/autotools.yml)
 [![Autotools Build](https://github.com/cisco/libsrtp/actions/workflows/meson.yml/badge.svg)](https://github.com/cisco/libsrtp/actions/workflows/meson.yml)

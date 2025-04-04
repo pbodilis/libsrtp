@@ -141,6 +141,9 @@
 /* Define this to use OpenSSL crypto. */
 #undef OPENSSL
 
+/* Define this to use WEBCRYPTO crypto. */
+#undef WEBCRYPTO
+
 /* Define this to use OpenSSL KDF for SRTP. */
 #undef OPENSSL_KDF
 

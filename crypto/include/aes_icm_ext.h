@@ -109,4 +109,18 @@ typedef struct {
 
 #endif /* NSS */
 
+#ifdef WEBCRYPTO
+
+#include <emscripten/val.h>
+
+typedef struct {
+    v128_t counter; /* holds the counter value          */
+    v128_t offset;  /* initial offset value             */
+    size_t key_size;
+
+    emscripten::EM_VAL key;
+} srtp_aes_icm_ctx_t;
+
+#endif /* WEBCRYPTO */
+
 #endif /* AES_ICM_H */

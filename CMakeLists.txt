@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(libsrtp3 VERSION 3.0.0 LANGUAGES C)
+project(libsrtp3 VERSION 3.0.0 LANGUAGES C CXX)
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED FALSE)
 set(CMAKE_C_EXTENSIONS ON)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED FALSE)
+set(CMAKE_CXX_EXTENSIONS ON)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(PACKAGE_VERSION ${PROJECT_VERSION})
@@ -89,8 +94,9 @@ set(ENABLE_OPENSSL OFF CACHE BOOL "Enable OpenSSL crypto engine")
 set(ENABLE_WOLFSSL OFF CACHE BOOL "Enable wolfSSL crypto engine")
 set(ENABLE_MBEDTLS OFF CACHE BOOL "Enable MbedTLS crypto engine")
 set(ENABLE_NSS OFF CACHE BOOL "Enable NSS crypto engine")
+set(ENABLE_WEBCRYPTO OFF CACHE BOOL "Enable WebCrypto engine")
 
-if(ENABLE_OPENSSL OR ENABLE_WOLFSSL OR ENABLE_MBEDTLS OR ENABLE_NSS)
+if(ENABLE_OPENSSL OR ENABLE_WOLFSSL OR ENABLE_MBEDTLS OR ENABLE_NSS OR ENABLE_WEBCRYPTO)
   set(USE_EXTERNAL_CRYPTO TRUE)
 else()
   set(USE_EXTERNAL_CRYPTO FALSE)
@@ -131,6 +137,16 @@ if(ENABLE_NSS)
   find_package(NSS REQUIRED)
   set(NSS ${ENABLE_NSS} CACHE BOOL INTERNAL)
   set(GCM ${ENABLE_NSS} CACHE BOOL INTERNAL)
+endif()
+
+if(ENABLE_WEBCRYPTO)
+  if(ENABLE_WOLFSSL OR ENABLE_NSS OR ENABLE_MBEDTLS)
+    message(FATAL_ERROR "ssl conflict. can not enable openssl and wolfssl, mbedtls or nss simultaneously.")
+  endif()
+  message("Will use webcrypto.")
+  find_package(OpenSSL REQUIRED)
+  set(WEBCRYPTO ${ENABLE_WEBCRYPTO} CACHE BOOL INTERNAL)
+  set(GCM ${ENABLE_WEBCRYPTO} CACHE BOOL INTERNAL)
 endif()
 
 set(CONFIG_FILE_DIR ${CMAKE_CURRENT_BINARY_DIR})
@@ -179,6 +195,11 @@ elseif(ENABLE_NSS)
     crypto/cipher/aes_icm_nss.c
     crypto/cipher/aes_gcm_nss.c
   )
+elseif(ENABLE_WEBCRYPTO)
+  list(APPEND CIPHERS_SOURCES_C
+    crypto/cipher/aes_icm_webcrypto.cc
+    crypto/cipher/aes_gcm_ossl.c
+  )
 else()
   list(APPEND CIPHERS_SOURCES_C
     crypto/cipher/aes.c
@@ -209,6 +230,10 @@ elseif(ENABLE_NSS)
   list(APPEND HASHES_SOURCES_C
     crypto/hash/hmac_nss.c
   )
+# elseif(ENABLE_WEBCRYPTO)
+#   list(APPEND HASHES_SOURCES_C
+#     crypto/hash/hmac_ossl.c
+#   )
 else()
   list(APPEND HASHES_SOURCES_C
     crypto/hash/hmac.c
@@ -307,6 +332,9 @@ target_include_directories(srtp3 PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 if(ENABLE_OPENSSL)
+  target_include_directories(srtp3 PRIVATE ${OPENSSL_INCLUDE_DIR})
+  target_link_libraries(srtp3 OpenSSL::Crypto)
+elseif(ENABLE_WEBCRYPTO)
   target_include_directories(srtp3 PRIVATE ${OPENSSL_INCLUDE_DIR})
   target_link_libraries(srtp3 OpenSSL::Crypto)
 elseif(ENABLE_WOLFSSL)

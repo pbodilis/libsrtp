@@ -37,6 +37,11 @@
 #ifndef CIHPER_TYPES_H
 #define CIHPER_TYPES_H
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "cipher.h"
 #include "auth.h"
 
@@ -71,10 +76,16 @@ extern srtp_debug_module_t srtp_mod_alloc;
 /* debug modules for cipher types */
 extern srtp_debug_module_t srtp_mod_aes_icm;
 
-#if defined(OPENSSL) || defined(WOLFSSL) || defined(MBEDTLS) || defined(NSS)
+#if defined(OPENSSL) || defined(WOLFSSL) || defined(MBEDTLS) || defined(NSS) || defined(WEBCRYPTO)
 extern srtp_debug_module_t srtp_mod_aes_gcm;
 #endif
 
 /* debug modules for auth types */
 extern srtp_debug_module_t srtp_mod_hmac;
+
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
