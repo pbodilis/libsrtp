@@ -4,7 +4,7 @@
 This is an attempt to use WebCrypto as cypher engine instead of built-in libsrtp (or Openssl, wolfssl, ...)
 
 Main problem is that WebCrypto is asynchronous, so requires the use of `await` and ASINCIFY, which produces significant overhead + context switching.
-For 10000 protect/unprotect with a 256 bits key:
+For 10000 protect/unprotect with a 256 bits key (in node):
 built_in: ~1600ms
 webcrypto: ~1600ms (so yeah, pretty much on par with built_in)
 openssl: ~400ms (4 times faster, pretty much a no brainer)
